@@ -9,7 +9,9 @@ end
 private
 
 def credentials
-  @credentials ||= begin
-    YAML.load_file("#{File.dirname(__FILE__)}/../config/dhl_credentials.yml")
-  end
+  @credentials ||= YAML.load_file(credentials_path)
+end
+
+def credentials_path
+  File.expand_path("../../config/dhl_credentials.yml", __FILE__)
 end

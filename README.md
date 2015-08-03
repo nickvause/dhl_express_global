@@ -1,9 +1,6 @@
 # DhlExpressGlobal
 
-TODO: 
-- Write a gem description
-- add documentation
-- add Rate Request class
+Ruby API wrapper to interface with DHL Express Global
 
 ## Installation
 
@@ -24,6 +21,10 @@ Or install it yourself as:
 ## Usage
 
 TODO: Write usage instructions here
+
+## Testing / Rspec
+
+This gem is using Rspec for testing. As well VCR is implemented for testing the API. To make VCR work make sure to copy `spec/config/dhl_credentials.example.yml` to `spec/config/dhl_credentials.yml` and update the development credentails with actual account details.
 
 ## Contributing
 
