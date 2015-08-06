@@ -2,6 +2,7 @@ require 'dhl_express_global/credentials'
 require 'dhl_express_global/request/shipment'
 require 'dhl_express_global/request/label'
 require 'dhl_express_global/request/delete'
+require 'dhl_express_global/request/rate'
 
 module DhlExpressGlobal
 
@@ -21,6 +22,10 @@ module DhlExpressGlobal
 
     def ship(options = {})
       Request::Shipment.new(@credentials, options).process_request
+    end
+
+    def rate(options = {})
+      Request::Rate.new(@credentials, options).process_request
     end
 
   end
