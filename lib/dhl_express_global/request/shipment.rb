@@ -64,7 +64,7 @@ module DhlExpressGlobal
           xml.DropOffType @shipping_options[:drop_off_type] ||= "REGULAR_PICKUP"
           xml.ServiceType @service_type
           xml.Account @credentials.account_number
-          xml.Currency @shipping_options[:currency]
+          xml.Currency @shipping_options[:currency].upcase
           xml.UnitOfMeasurement @shipping_options[:unit_of_measurement]
         }
       end
@@ -101,7 +101,7 @@ module DhlExpressGlobal
 
 
       def failure_response(response)
-        error_message = response[:envelope][:body][:shipment_response][:notification][:message]
+        error_message = error_response(response)
         raise RateError, error_message
       end
 
@@ -110,7 +110,13 @@ module DhlExpressGlobal
       end
 
       def success?(response)
-        response[:envelope][:body][:shipment_response] && !response[:envelope][:body][:shipment_response][:notification][:message]
+        response[:envelope][:body][:shipment_response] && !error_response(response)
+      end
+
+      def error_response(response)
+        response[:envelope][:body][:shipment_response][:notification][:message]
+      rescue
+        response[:envelope][:body][:shipment_response][:notification].first[:message]
       end
 
       def headers
