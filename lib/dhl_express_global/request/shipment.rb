@@ -21,7 +21,6 @@ module DhlExpressGlobal
       end
 
       def process_request
-        api_response = self.class.post api_url, :body => build_xml, :headers => headers
         puts api_response if @debug
         response = parse_response(api_response)
         if success?(response)
@@ -29,6 +28,14 @@ module DhlExpressGlobal
         else
           failure_response(response)
         end
+      end
+
+      def api_response
+        @response ||= self.class.post(URI(api_url),
+          body:    build_xml,
+          headers: headers,
+          verify: true
+        )
       end
 
       private
