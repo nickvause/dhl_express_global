@@ -15,10 +15,10 @@ module DhlExpressGlobal
       default_options.update(verify: false)
 
       # DHL Express Global Test URL
-      TEST_URL = 'https://wsb.dhl.com:443/sndpt/expressRateBook?WSDL'
+      TEST_URL = 'https://wsbexpress.dhl.com:443/sndpt/'
 
       # DHL Express Global Production URL
-      PRODUCTION_URL = ''
+      PRODUCTION_URL = 'https://wsbexpress.dhl.com:443/gbl/'
 
       # SERVICE_CODES = []
       
@@ -40,7 +40,16 @@ module DhlExpressGlobal
       end
 
       def api_url
-        @credentials.mode == 'production' ? PRODUCTION_URL : TEST_URL
+        if @credentials.mode == 'production'
+          "#{PRODUCTION_URL}#{api_action}"
+        else
+          "#{TEST_URL}#{api_action}?WSDL"
+        end
+      end
+
+      def api_action
+        # default action, overwrite in subclass
+        "expressRateBook"
       end
 
       def build_xml
