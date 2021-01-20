@@ -3,9 +3,9 @@ require 'dhl_express_global/request/base'
 module DhlExpressGlobal
   module Request
     class Rate < Base
-
       def initialize(credentials, options={})
         super
+        @payment_info = options[:payment_info]
       end
 
       def process_request
@@ -49,6 +49,11 @@ module DhlExpressGlobal
 
       def add_shipper(xml)
         xml.Shipper {
+          xml.Contact {
+            xml.PersonName @shipper[:name]
+            xml.CompanyName @shipper[:company]
+            xml.PhoneNumber @shipper[:phone_number]
+          }
           add_address_street_lines(xml, @shipper[:address])
           xml.City @shipper[:city]
           xml.PostalCode @shipper[:postal_code]
@@ -59,6 +64,11 @@ module DhlExpressGlobal
 
       def add_recipient(xml)
         xml.Recipient {
+          xml.Contact {
+            xml.PersonName @recipient[:name]
+            xml.CompanyName @recipient[:company]
+            xml.PhoneNumber @recipient[:phone_number]
+          }
           add_address_street_lines(xml, @recipient[:address])
           xml.City @recipient[:city]
           xml.PostalCode @recipient[:postal_code]
@@ -109,6 +119,26 @@ module DhlExpressGlobal
       ##     <Account>000000000</Account>
       ##   </RequestedShipment>
       ## </RateRequest>
+      
+      def failure_response(response)
+        error_message = error_response(response)
+        raise RateError, error_message
+      end
+      
+      def success_response(response)
+        @response_details = response[:envelope][:body][:rate_response]
+      end
+
+      def success?(response)
+        response[:envelope][:body][:rate_response] && !error_response(response)
+      end
+
+      def error_response(response)
+        response[:envelope][:body][:rate_response][:provider][:notification][:message]
+      rescue
+        response[:envelope][:body][:rate_response][:provider][:notification].first[:message]
+      end
+
     end
   end
 end

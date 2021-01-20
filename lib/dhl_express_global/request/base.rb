@@ -43,7 +43,7 @@ module DhlExpressGlobal
         if @credentials.mode == 'production'
           "#{PRODUCTION_URL}#{api_action}"
         else
-          "#{TEST_URL}#{api_action}?WSDL"
+          "#{TEST_URL}#{api_action}"
         end
       end
 
@@ -57,8 +57,12 @@ module DhlExpressGlobal
       end
 
       def parse_response(response)
-        response = Hash.from_xml( response.parsed_response.gsub("\n", "") ) if response.parsed_response.is_a? String
-        response = sanitize_response_keys(response)
+        if response.parsed_response.is_a? String
+          parsed_response = Hash.from_xml( response.parsed_response.gsub("\n", "") )
+        else
+          parsed_response = response.parsed_response
+        end
+        sanitize_response_keys(parsed_response)
       end
 
       def sanitize_response_keys(response)
@@ -134,7 +138,9 @@ module DhlExpressGlobal
       def add_requested_packages(xml)
         @packages.each_with_index do |package, i|
           xml.RequestedPackages('number' => i + 1) {
-            xml.Weight package[:weight][:value]
+            xml.Weight {
+              xml.Value package[:weight][:value]
+            }
             xml.Dimensions {
               xml.Length package[:dimensions][:length]
               xml.Width package[:dimensions][:width]
@@ -142,7 +148,7 @@ module DhlExpressGlobal
             }
           }
         end
-        xml.ShipTimestamp (Time.now + 10*60).strftime("%Y-%m-%dT%H:%M:%SGMT%:z")
+        xml.ShipTimestamp @shipping_options[:ship_timestamp] || (Time.now + 10*60).strftime("%Y-%m-%dT%H:%M:%SGMT%:z")
         xml.UnitOfMeasurement @packages.first[:weight][:units] == 'KG' ? 'SI' : 'SU'
         xml.Content @shipping_options[:package_contents] ||= "NON_DOCUMENTS"
       end
