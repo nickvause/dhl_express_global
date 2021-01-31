@@ -67,13 +67,28 @@ module DhlExpressGlobal
       end
 
       def add_shipment_info(xml)
-        xml.ShipmentInfo {
+        xml.ShipmentInfo do
           xml.DropOffType @shipping_options[:drop_off_type] ||= "REGULAR_PICKUP"
           xml.ServiceType @service_type
           xml.Account @credentials.account_number
           xml.Currency @shipping_options[:currency].upcase
           xml.UnitOfMeasurement @shipping_options[:unit_of_measurement]
-        }
+          if @shipping_options[:paperless_trade_enabled]
+            xml.PaperlessTradeEnabled @shipping_options[:paperless_trade_enabled] ? 'true' : 'false'
+            if @shipping_options[:request_dhl_customs_invoice]
+              xml.LabelOptions do
+                xml.RequestDHLCustomsInvoice @shipping_options[:request_dhl_customs_invoice] ? 'Y' : 'N'
+              end
+            end
+          end
+          if @shipping_options[:dhl_express_service_code]
+            xml.SpecialServices do
+              xml.Service do
+                xml.ServiceType @shipping_options[:dhl_express_service_code]
+              end
+            end
+          end
+        end
       end
 
       def add_international_detail(xml)
@@ -86,6 +101,27 @@ module DhlExpressGlobal
             xml.UnitPrice @commodities[:unit_price] if @commodities[:unit_price]
             xml.CustomsValue @commodities[:customs_value]
           }
+          @international_detail[:export_declaration]&.tap do |export_declaration|
+            xml.ExportDeclaration do
+              xml.InvoiceNumber export_declaration[:invoice_number] if export_declaration[:invoice_number]
+              xml.InvoiceDate export_declaration[:invoice_date].strftime("%Y-%m-%d") if export_declaration[:invoice_date]
+              if export_declaration[:line_items]
+                xml.ExportLineItems do
+                  export_declaration[:line_items].each do |line_item|
+                    xml.ExportLineItem do
+                      xml.ItemNumber line_item[:item_number]
+                      xml.Quantity line_item[:quantity]
+                      xml.QuantityUnitOfMeasurement line_item[:quantity_units]
+                      xml.ItemDescription line_item[:description]
+                      xml.UnitPrice line_item[:unit_price]
+                      xml.NetWeight line_item[:net_weight]
+                      xml.GrossWeight line_item[:gross_weight]
+                    end
+                  end
+                end
+              end
+            end
+          end
           xml.Content @international_detail[:content] if @international_detail[:content]
         }
       end
