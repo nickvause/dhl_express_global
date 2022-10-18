@@ -96,7 +96,6 @@ module DhlExpressGlobal
           xml.Commodities {
             xml.NumberOfPieces @commodities[:number_of_pieces] if @commodities[:number_of_pieces]
             xml.Description @commodities[:description]
-            xml.CountryOfManufacture @commodities[:country_of_manufacture] if @commodities[:country_of_manufacture]
             xml.Quantity @commodities[:quantity] if @commodities[:quantity]
             xml.UnitPrice @commodities[:unit_price] if @commodities[:unit_price]
             xml.CustomsValue @commodities[:customs_value]
@@ -116,6 +115,8 @@ module DhlExpressGlobal
                       xml.UnitPrice line_item[:unit_price]
                       xml.NetWeight line_item[:net_weight]
                       xml.GrossWeight line_item[:gross_weight]
+                      xml.ManufacturingCountryCode line_item[:country_of_manufacture]
+                      xml.CommodityCode line_item[:commodity_code]
                     end
                   end
                 end
