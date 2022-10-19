@@ -10,11 +10,15 @@ module DhlExpressGlobal
       @options = @response_details[:label_image]
       @options[:tracking_number] = @response_details[:packages_result][:package_result][:tracking_number] 
       @options[:file_name] = label_details[:file_name]
+      dump_document_debug()
       @image = Base64.decode64(options[:graphic_image]) if has_image?
-
       if file_name = @options[:file_name]
         save(file_name, false)
       end
+    end
+
+    def dump_document_debug
+      puts(@response_details[:documents]) unless @response_details[:documents].nil?
     end
 
     def name
